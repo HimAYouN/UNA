@@ -11,9 +11,9 @@ const port = process.env.PORT
 const startServer = async () => {
   try {
     await connectDB()
-    console.log("MongoDB Connected Successfully");
+    console.log(" 👀 MongoDB Connected Successfully");
     app.listen(port, () => {
-      console.log(`Example app listening on port ${port}`)
+      console.log(` ✅  UNA listening on port ${port}`)
     })
 
   } catch (error) {
