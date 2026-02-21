@@ -1,4 +1,4 @@
-import crypto, { randomInt, createHash } from 'crypto'
+import crypto, { randomInt } from 'crypto'
 
 
 const generateOTP = () => {
@@ -7,10 +7,12 @@ const generateOTP = () => {
     return randomOTP
 }
 const hashOTP = (random) => {
+
     return crypto
         .createHash('SHA256')
         .update(random)
         .digest('hex')
 }
+
 
 export {generateOTP, hashOTP}
