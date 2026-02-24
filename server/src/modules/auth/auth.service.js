@@ -1,8 +1,27 @@
 
+
+import { randomInt } from "crypto";
 import { OTP_ATTEMPT_TIME, OTP_EXPITY_TIME } from "../../constants.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { generateOTP, hashOTP } from "../../utils/otp.js";
 import { User } from "../users/user.model.js";
+import bcrypt from 'bcrypt'
+
+
+const generateRefreshAndAccessToken = async (userId) => {
+    try {
+        const user = await User.findById(userId);
+        const refreshToken = await user.generateRefreshToken();
+        const accessToken = await user.generateAccessToken();
+
+        user.accessToken = accessToken
+        await user.save({ validateBeforeSave: false });
+        return { accessToken, refreshToken }
+    } catch (error) {
+        throw new ApiError("Something went south while generating token", 500)
+    }
+}
+
 
 export async function registerUserService(email, password) {
 
@@ -12,7 +31,7 @@ export async function registerUserService(email, password) {
         if (existingUser && existingUser.isVerified) throw new ApiError("User already exists", 409)
 
         if (existingUser && !existingUser.isVerified) {
-
+            if (existingUser.otpAttemptTime && Date.now() < existingUser.otpAttemptTime.getTime()) { throw new ApiError(`Please try again after ${existingUser.otpAttemptTime}`, 409) }
             const otp = generateOTP();
 
             const hashedOTP = hashOTP(otp);
@@ -23,13 +42,14 @@ export async function registerUserService(email, password) {
 
             await existingUser.save();
 
-
+            //TODO SEND OTP IN EMAIL 
             return { message: `Verification code: ${otp} sent` }
         }
 
         let baseUsername = email.split('@')[0]
         let username = baseUsername
-        let counter = 1
+        let counter = randomInt(0, 10000).toString().padStart(4, '0');
+
 
 
         while (await User.findOne({ username })) {
@@ -46,9 +66,13 @@ export async function registerUserService(email, password) {
         const createdUser = await User.findById(user._id).select(
             "-password -refreshTokens -otpHash"
         )
-        if (!createdUser) throw new ApiError("Something went south!", 500)
-        ////SENDING EMAIL LOGIC YAHA P LKHNA HAI ?////
-        return { message: `Verification code: ${otp} sent`, createdUser }
+
+
+        if (!createdUser) { throw new ApiError("Something went south! while creating user", 500) }
+
+        ////TODO SENDING EMAIL LOGIC YAHA P LKHNA HAI ?////
+        return { message: `Verification code: ${otp} sent, next time it will be sent to ${createdUser.email} Hopefully!`, createdUser }
+
     } catch (error) {
         if (error instanceof ApiError) throw error;
         throw new ApiError(error.message, 500);
@@ -59,15 +83,14 @@ export async function registerUserService(email, password) {
 export async function verifyUserService(email, otp) {
     try {
 
-
         const existingUser = await User.findOne({ email })
 
-        if (!existingUser) throw new ApiError("Invalid email or password", 409);
+        if (!existingUser) { throw new ApiError("Invalid email or password", 409); }
 
-        if (existingUser.isVerified) throw new ApiError("User Already verified", 409)
+        if (existingUser.isVerified) { throw new ApiError("User Already verified", 409) }
 
-        if (existingUser.otpAttemptTime && Date.now() < existingUser.otpAttemptTime.getTime()) throw new ApiError(`Please try again after ${existingUser.otpAttemptTime}`, 409)
-        if (existingUser.otpExpiresAt && existingUser.otpExpiresAt.getTime() < Date.now()) throw new ApiError("OTP expired!", 409)
+        if (existingUser.otpAttemptTime && Date.now() < existingUser.otpAttemptTime.getTime()) { throw new ApiError(`Please try again after ${existingUser.otpAttemptTime}`, 409) }
+        if (existingUser.otpExpiresAt && existingUser.otpExpiresAt.getTime() < Date.now()) { throw new ApiError("OTP expired!", 409) }
 
         const otpHash = hashOTP(otp)
         if (existingUser.otpHash !== otpHash) {
@@ -77,7 +100,7 @@ export async function verifyUserService(email, otp) {
                 // existingUser.otpAttemptTime = new Date(Date.now() + 1000*60*2)
                 existingUser.otpAttempts = 0
                 await existingUser.save()
-                throw new ApiError(`You have exceeded otp trials, Please try again after ${existingUser.otpAttemptTime}`, 409);
+                { throw new ApiError(`You have exceeded otp trials, Please try again after ${existingUser.otpAttemptTime}`, 409); }
             }
 
             await existingUser.save();
@@ -93,10 +116,11 @@ export async function verifyUserService(email, otp) {
         existingUser.otpExpiresAt = null
         await existingUser.save()
 
-        return { message: `Verification code` }
+        //TODO - EMAIL => VERIFIED SUCCESSFULLY
+        return { message: `User ${existingUser.username} verified successfully` }
 
     } catch (error) {
-        if (error instanceof ApiError) throw error;
+        if (error instanceof ApiError) { throw error };
         throw new ApiError(error.message, 500);
     }
 }
@@ -105,22 +129,48 @@ export async function verifyUserService(email, otp) {
 
 export async function loginUserService(email, password) {
 
-    //check if email, password is valid
-    //user = check if email exists
-    //check if password matches with user
-    // return user 
+
     try {
         if (email.trim() == "" || password.trim() == "") throw new ApiError("Invalid email or password", 401);
+
         const user = await User.findOne({ email });
+
         if (!user) throw new ApiError("Invalid email or password", 401);
+
 
         if (! await user.isPasswordCorrect(password)) throw new ApiError("Invalid email or password", 401)
 
 
-        return { message: `LoggedIn successfully: ${email}` }
+        if (!user.isVerified) throw new ApiError("User not verified Please verify your email before login!", 409)
+
+
+        const { accessToken, refreshToken } = await generateRefreshAndAccessToken(user._id)
+
+        //TODO -  Store tokens in DB for multiple devices in hashed format
+
+        const hashRefreshToken = await bcrypt.hash(refreshToken, 10)
+
+
+        const LoggedInUser = await User.findById(user._id).select("-password -refreshTokens -otpHash")
+
+
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+
+
+
+
+        //TODO - EMAIL => LOGGED IN SUCCESSFULLY
+        return { message: `LoggedIn successfully: ${email}`, options, refreshToken, accessToken, LoggedInUser }
     } catch (error) {
         if (error instanceof ApiError) throw error;
         throw new ApiError(error.message, 500);
     }
 }
 
+
+export async function logoutUserService() {
+
+}

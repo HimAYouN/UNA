@@ -1,7 +1,8 @@
 import mongoose from 'mongoose'
-import bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt'
 import crypto from 'crypto'
-import { TEMPORARY_TOKEN_EXPIRY } from '../../constants'
+import jwt from 'jsonwebtoken'
+import { TEMPORARY_TOKEN_EXPIRY } from '../../constants.js'
 
 
 
@@ -56,29 +57,32 @@ const userSchema = mongoose.Schema({
 
 
     //Session
-    refreshTokens: [{
-        tokenHash: {
-            type: String,
-            required: true
-        },
-        createdAt: {
-            type: Date,
-        },
-    }],
+    refreshTokens: [
+        {
+            tokenHash: {
+                type: String,
+                required: true
+            },
+            createdAt: {
+                type: Date,
+            },
+        }
+    ],
 
 
 
 }, { timestamps: true })
 
 userSchema.pre("save", async function () {
-    if (!this.isModified("password")) return ""
-    this.password = bcrypt.hash(this.password, 10)
-
-
+    if (!this.isModified("password")) return
+    this.password = await bcrypt.hash(this.password, 10)
 })
 
 userSchema.methods.isPasswordCorrect = async function (password) {
-    bcrypt.compare(password, this.password)
+    return await bcrypt.compare(password, this.password)
+}
+userSchema.methods.isRefreshTokenCorrect = async function (refreshToken) {
+    return await bcrypt.compare(refreshToken, this.refreshTokens.tokenHash)
 }
 
 userSchema.methods.generateAccessToken = async function () {
@@ -98,12 +102,12 @@ userSchema.methods.generateTemporaryToken = function () {
     const unHashedToken = crypto.randomBytes(20).toString("hex")
 
     const hashedToken = crypto
-    .createHash("sha256")
-    .update(unHashedToken)
-    .digest("hex")
-    
+        .createHash("sha256")
+        .update(unHashedToken)
+        .digest("hex")
+
     const tokenExpiry = Date.now() + TEMPORARY_TOKEN_EXPIRY
-    return {unHashedToken, hashedToken, tokenExpiry}
+    return { unHashedToken, hashedToken, tokenExpiry }
 }
 
 export const User = mongoose.model('User', userSchema)
