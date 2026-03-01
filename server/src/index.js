@@ -3,9 +3,12 @@ import dotenv from 'dotenv'
 import connectDB from './config/db.js'
 
 
+
 dotenv.config()
 
 const port = process.env.PORT
+
+
 
 
 const startServer = async () => {
