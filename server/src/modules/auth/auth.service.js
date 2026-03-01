@@ -66,9 +66,9 @@ export async function registerUserService(email, password) {
         const createdUser = await User.findById(user._id).select(
             "-password -refreshTokens -otpHash"
         )
-
-
+        
         if (!createdUser) { throw new ApiError("Something went south! while creating user", 500) }
+        console.log(createdUser)
 
         ////TODO SENDING EMAIL LOGIC YAHA P LKHNA HAI ?////
         return { message: `Verification code: ${otp} sent, next time it will be sent to ${createdUser.email} Hopefully!`, createdUser }
