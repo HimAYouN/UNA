@@ -1,11 +1,12 @@
 import express from 'express'
-import healthRouter from './modules/healthCheck/health.routes.js';
-import authRouter from './modules/auth/auth.routes.js'
-import userRouter from './modules/users/user.routes.js'
 import { ROUTE_VERSION } from './constants.js';
 import cookieParser from 'cookie-parser';
 import cors from 'cors'
 
+import healthRouter from './modules/healthCheck/health.routes.js';
+import authRouter from './modules/auth/auth.routes.js'
+import userRouter from './modules/users/user.routes.js'
+import materialRouter from './modules/materials/material.routes.js'
  
 const app = express() 
 
@@ -22,5 +23,6 @@ app.use(cors({
 app.use(`${ROUTE_VERSION}`, healthRouter)
 app.use(`${ROUTE_VERSION}/user`,authRouter)
 app.use(`${ROUTE_VERSION}/user`, userRouter)
+app.use(`${ROUTE_VERSION}/materials`, materialRouter)
 
 export default app;
