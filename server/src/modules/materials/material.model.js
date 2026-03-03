@@ -21,7 +21,7 @@ const materialSchema = mongoose.Schema({
     type: {
         //enum  notes | pyq
         type: String,
-        enum: ['notes' | 'pyq'],
+        enum: ['notes' , 'pyq'],
         default: 'notes',
         required: true
     },
@@ -34,7 +34,7 @@ const materialSchema = mongoose.Schema({
     publicId: {
         type: String
     },
-    fileType: String,
+    fileType: String, //PDF, IMG, ETC
     fileSize: String,
     uploadedBy:{
         type: mongoose.Schema.Types.ObjectId,
@@ -51,6 +51,10 @@ const materialSchema = mongoose.Schema({
         enum: ['pending', 'approved', 'rejected'],
         default: 'pending',
         index: true
+    }, 
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 
 
