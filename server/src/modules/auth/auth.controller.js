@@ -1,5 +1,5 @@
 import { ApiError } from "../../utils/ApiError.js";
-import { loginUserService, logoutUserService, registerUserService, verifyUserService } from "./auth.service.js"
+import { loginUserService, logoutUserService, refreshTokenService, registerUserService, verifyUserService } from "./auth.service.js"
 
 export async function  registerUser(req, res, next){
  try {
@@ -36,10 +36,25 @@ export async function loginUser(req, res, next) {
    }   
 }
 
+
+//TODO - Logout
 export async function logoutUser(req, res, next){
    try {
-      const result = await logoutUserService()
+      const result = await logoutUserService(res)
       return res.status(200).json(result)
+   } catch (error) {
+      next(error)
+   }
+}
+
+export async function handleRefreshToken(req, res, next) {
+   try {
+      const refreshToken  = req.cookies.refreshToken 
+      const result = await refreshTokenService(refreshToken)
+      return res
+      .cookie("accessToken", result.accessToken, result.options)
+      .json(200)
+      
    } catch (error) {
       next(error)
    }

@@ -7,6 +7,8 @@ import { generateOTP, hashOTP } from "../../utils/otp.js";
 import { User } from "../users/user.model.js";
 import bcrypt from 'bcrypt'
 
+import jwt from 'jsonwebtoken'
+import { email } from "zod";
 
 const generateRefreshAndAccessToken = async (userId) => {
     try {
@@ -66,7 +68,7 @@ export async function registerUserService(email, password) {
         const createdUser = await User.findById(user._id).select(
             "-password -refreshTokens -otpHash"
         )
-        
+
         if (!createdUser) { throw new ApiError("Something went south! while creating user", 500) }
         console.log(createdUser)
 
@@ -170,7 +172,49 @@ export async function loginUserService(email, password) {
     }
 }
 
+//TODO -  PENDIN
+export async function logoutUserService(res) {
+    try {
+        res.clearCookie('accessToken')
+        res.clearCookie('refreshToken')
+    } catch (error) {
+        if (error instanceof ApiError) throw error
+        throw new ApiError(error.message, 500)
+    }
+}
 
-export async function logoutUserService() {
+export async function refreshTokenService(refreshToken) {
+    try {
+        if (!refreshToken) throw new ApiError("No Token found, Please Login again", 400)
 
+        const decodedRefresh = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
+        if (!decodedRefresh) throw new ApiError("Something went south, please login", 409)
+
+
+        // const user = await User.findById(decodedRefresh._id)
+        // if(!user) throw new ApiError("Couldn't find user, Please login again")
+
+
+        const payload = {
+            _id: decodedRefresh._id,
+            email: decodedRefresh.email,
+            role: decodedRefresh.role
+        }
+        const accessToken = jwt.sign(
+            payload,
+            process.env.REFRESH_TOKEN_SECRET,
+            process.env.REFRESH_TOKEN_EXPIRY
+        )
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+
+
+        return {accessToken, options};
+
+    } catch (error) {
+        if (error instanceof ApiError) throw error;
+        throw new ApiError(error.message, 500)
+    }
 }
