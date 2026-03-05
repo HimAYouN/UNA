@@ -1,7 +1,7 @@
 
 import mongoose from 'mongoose'
 
-const materialSchema = mongoose.Schema({
+const materialSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,

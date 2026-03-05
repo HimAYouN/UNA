@@ -6,7 +6,7 @@ import { TEMPORARY_TOKEN_EXPIRY } from '../../constants.js'
 
 
 
-const userSchema = mongoose.Schema({
+const userSchema = new mongoose.Schema({
     //BASIC DETAILS
     email: {
         type: String,
