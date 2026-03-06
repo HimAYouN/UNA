@@ -53,8 +53,8 @@ export async function handleRefreshToken(req, res, next) {
       const result = await refreshTokenService(refreshToken)
       return res
       .cookie("accessToken", result.accessToken, result.options)
-      .json(200)
-      
+      .status(200)
+      .json(result.accessToken)      
    } catch (error) {
       next(error)
    }
