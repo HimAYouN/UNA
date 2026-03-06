@@ -8,7 +8,6 @@ import { User } from "../users/user.model.js";
 import bcrypt from 'bcrypt'
 
 import jwt from 'jsonwebtoken'
-import { email } from "zod";
 
 const generateRefreshAndAccessToken = async (userId) => {
     try {
@@ -200,11 +199,21 @@ export async function refreshTokenService(refreshToken) {
             email: decodedRefresh.email,
             role: decodedRefresh.role
         }
-        const accessToken = jwt.sign(
-            payload,
-            process.env.REFRESH_TOKEN_SECRET,
-            process.env.REFRESH_TOKEN_EXPIRY
-        )
+        // jwt.sign(
+        //     payload,
+        //     process.env.ACCESS_TOKEN_SECRET,
+        //     process.env.ACCESS_TOKEN_SECRET
+        // )
+
+
+          const accessToken =  jwt.sign(
+            payload
+            , process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN })
+
+
+
+
         const options = {
             httpOnly: true,
             secure: true
