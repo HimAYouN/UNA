@@ -7,7 +7,7 @@ import healthRouter from './modules/healthCheck/health.routes.js';
 import authRouter from './modules/auth/auth.routes.js'
 import userRouter from './modules/users/user.routes.js'
 import materialRouter from './modules/materials/material.routes.js'
-import uniRouter from './modules/universities/universities.routes.js'
+import adminRouter from './modules/admin/admin.routes.js'
 
  
 const app = express() 
@@ -26,7 +26,7 @@ app.use(`${ROUTE_VERSION}`, healthRouter)
 app.use(`${ROUTE_VERSION}/user`,authRouter)
 app.use(`${ROUTE_VERSION}/user`, userRouter)
 app.use(`${ROUTE_VERSION}/materials`, materialRouter)
-app.use(`${ROUTE_VERSION}/uni`, uniRouter)
+app.use(`${ROUTE_VERSION}/admin`, adminRouter)
 
 
 export default app;

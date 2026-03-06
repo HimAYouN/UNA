@@ -52,6 +52,11 @@ const materialSchema = new mongoose.Schema({
         default: 'pending',
         index: true
     }, 
+    statusChangedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "admin",
+
+    },
     isDeleted: {
         type: Boolean,
         default: false
