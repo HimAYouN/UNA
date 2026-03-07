@@ -85,7 +85,8 @@ export async function deleteOneUser(req, res, next) {
 
 export async function getAllReports(req, res, next) {
     try {
-        const result = await getAllReportsService()
+        const {page, limit} = req.query
+        const result = await getAllReportsService(page, limit)
         return res.status(200).json(result)
     } catch (error) {
         next(error)
@@ -95,7 +96,8 @@ export async function getAllReports(req, res, next) {
 
 export async function getOneReport(req, res, next) {
     try {
-        const result = await getOneReportService()
+        const {reportId} = req.params
+        const result = await getOneReportService(reportId)
         return res.status(200).json(result)
     } catch (error) {
         next(error)

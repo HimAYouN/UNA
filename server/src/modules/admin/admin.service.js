@@ -1,5 +1,6 @@
 import { ApiError } from '../../utils/ApiError.js';
 import { Material } from '../materials/material.model.js';
+import { Report } from '../reports/report.model.js';
 import { User } from '../users/user.model.js';
 
 export async function adminProfileService(user) {
@@ -133,10 +134,17 @@ export async function deleteOneUserService(userId) {
 }
 
 
-export async function getAllReportsService() {
+export async function getAllReportsService(page, limit) {
     try {
-        ///TODO -  Reports ka model abi nhi bna hai 
-        // await Report.find().skip().limit().lean()
+        
+        limit = parseInt(limit) || 1
+        page = parseInt(page) || 1
+
+        const skip = (page-1) * limit
+
+        const result = await Report.find().skip(skip).limit(limit).lean()
+
+        return result
     } catch (error) {
         if ( error instanceof ApiError) throw error;
         throw new ApiError(error.message, 500)
@@ -144,9 +152,14 @@ export async function getAllReportsService() {
 }
 
 
-export async function getOneReportService() {
+export async function getOneReportService(reportId) {
     try {
-        //TODO - Report ka model abi nhi bna hai
+        if(!reportId) throw new ApiError("No report Id found please try again", 401)
+        const result = await Report.findById(reportId)
+
+        if(!result) throw new ApiError("No report found please try again", 401)
+
+        return result
     } catch (error) {
         if ( error instanceof ApiError) throw error;
         throw new ApiError(error.message, 500)
