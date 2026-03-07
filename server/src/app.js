@@ -8,7 +8,7 @@ import authRouter from './modules/auth/auth.routes.js'
 import userRouter from './modules/users/user.routes.js'
 import materialRouter from './modules/materials/material.routes.js'
 import adminRouter from './modules/admin/admin.routes.js'
-
+import reportRouter from './modules/reports/report.routes.js'
  
 const app = express() 
 
@@ -27,6 +27,8 @@ app.use(`${ROUTE_VERSION}/user`,authRouter)
 app.use(`${ROUTE_VERSION}/user`, userRouter)
 app.use(`${ROUTE_VERSION}/materials`, materialRouter)
 app.use(`${ROUTE_VERSION}/admin`, adminRouter)
+app.use(`${ROUTE_VERSION}/reports`, reportRouter)
+
 
 
 export default app;
