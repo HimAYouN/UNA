@@ -3,13 +3,9 @@ import { cloudinary } from "../../config/cloudinary.js";
 import { User } from '../users/user.model.js'
 import { Material } from "./material.model.js";
 
-export async function uploadMaterialService(userId, fileBuffer, title, description, subject, type, universityId, courseId, fileType) {
+export async function uploadMaterialService(user, fileBuffer, title, description, subject, type, universityId, courseId, fileType) {
     try {
-        if (!userId) throw new ApiError("Opps No user Found!", 400)
-
-        const user = await User.findById(userId);
-        if (!user) throw new ApiError("Opps No user Found!", 404)
-
+        if (!user) throw new ApiError("Opps No user Found!", 400)
 
         //NOTE - Cloudinary ka code 
         const uploadResult = await new Promise((resolve, reject) => {
@@ -122,12 +118,14 @@ export async function updateOneNoteService(materialId, title, description, subje
     }
 }
 
-export async function deleteOneNoteService(materialId) {
+export async function deleteOneNoteService(materialId, user) {
     try {
         if (!materialId) throw new ApiError("Something went south : No materail Id", 400)
-
+            if(!user) throw new ApiError("Something went south! no user found please try again", 400)
         const material = await Material.findById(materialId)
         if (!material) throw new ApiError("Something went south, Couldn't find your material.", 404)
+            
+            if(material.uploadedBy.toString() !== user._id) throw new ApiError("You are not authorized to delete this.", 401)
         material.isDeleted = true
         await material.save()
         return {message: "Document deleted successfully"}

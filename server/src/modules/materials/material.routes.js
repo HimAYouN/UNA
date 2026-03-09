@@ -9,9 +9,9 @@ const router = Router ();
 
 router.get('/', getAllNotes) //TODO - Learn Pagination  
 router.post('/', authMiddleware, upload.single("file"), uploadMaterial)
-router.get('/:id', getOneNote)
-router.patch('/update/:id', updateOneNote)
-router.patch('/delete/:id', deleteOneNote)
+router.get('/:id', authMiddleware, getOneNote)
+router.patch('/update/:id', authMiddleware, updateOneNote)
+router.patch('/delete/:id', authMiddleware, deleteOneNote)
 
 
 export default router;

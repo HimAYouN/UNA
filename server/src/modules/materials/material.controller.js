@@ -4,13 +4,13 @@ import { deleteOneNoteService, getAllNotesService, getOneNoteService, updateOneN
 
 export async function uploadMaterial(req, res, next) {
     try {
-        const userId = req.user._id;
+        const user = req.user;
         const { title, description, subject, type } = req.body
         const { universityId, courseId } = req.params
         if (!req.file) throw new ApiError("File is required", 400);
         const fileBuffer = req.file.buffer;
         const fileType = req.file.mimetype
-        const result = await uploadMaterialService(userId, fileBuffer, title, description, subject, type, universityId, courseId, fileType);
+        const result = await uploadMaterialService(user, fileBuffer, title, description, subject, type, universityId, courseId, fileType);
         return res.status(200).json(result)
     } catch (error) {
         next(error)
@@ -52,8 +52,8 @@ export async function updateOneNote(req, res, next) {
 export async function deleteOneNote(req, res, next){
     try {
         const { id } = req.params
-
-        const result = await deleteOneNoteService(id)
+        const user = req.user
+        const result = await deleteOneNoteService(id, user)
         return res.status(200).json(result)
     } catch (error) {
         next(error)
