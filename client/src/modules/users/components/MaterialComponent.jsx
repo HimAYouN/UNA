@@ -1,8 +1,8 @@
+import { useMaterial } from "../hooks/useMaterial"
 
-import { material } from '../api/userApi'
 
 const MaterialComponent = () => {
-    const response = material()
+    const {loader, setLoader, response} = useMaterial()
     
   return (
     <div>

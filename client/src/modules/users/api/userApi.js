@@ -15,7 +15,7 @@ export const profile = async () => {
 
 export const material = async () => {
     try {
-        const response = await axios.get(`${BASE_API}/user/me/material`, {withCredentials: true})
+        const response = await axios.get(`${BASE_API}/user/me/materials`, {withCredentials: true})
         return response.data;
     } catch (error) {
         console.log("Something went wrong: ", error)

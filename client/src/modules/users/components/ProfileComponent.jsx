@@ -1,5 +1,5 @@
 
-import { userProfile } from '../hooks/useProfile'
+import { useProfile } from '../hooks/useProfile'
 
 const ProfileComponent = () => {
     const {loader, setLoader, response} = userProfile()
