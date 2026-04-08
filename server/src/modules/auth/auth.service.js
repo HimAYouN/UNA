@@ -147,7 +147,7 @@ export async function loginUserService(email, password) {
 
         const { accessToken, refreshToken } = await generateRefreshAndAccessToken(user._id)
 
-        //TODO -  Store tokens in DB for multiple devices in hashed format
+        //TODO -  Store tokens (RT) in DB for multiple devices in hashed format
 
         const hashRefreshToken = await bcrypt.hash(refreshToken, 10)
 
@@ -171,9 +171,10 @@ export async function loginUserService(email, password) {
     }
 }
 
-//TODO -  PENDIN
+//TODO -  
 export async function logoutUserService(res) {
     try {
+        //TODO - Clear RT from DB also 
         res.clearCookie('accessToken')
         res.clearCookie('refreshToken')
     } catch (error) {
